@@ -1,0 +1,239 @@
+/* ─── Layout ─────────────────────────────────────────────── */
+.register-root {
+  min-height: 100vh;
+  background-color: #f1f3f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 48px;
+  gap: 20px;
+}
+
+/* ─── Brand ──────────────────────────────────────────────── */
+.register-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.brand-icon-rocket {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(67, 56, 202, 0.08);
+  margin-bottom: 4px;
+}
+
+.brand-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
+}
+
+.brand-tagline-camel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* ─── Card ───────────────────────────────────────────────── */
+.register-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  padding: 32px 32px 28px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.card-header {
+  margin-bottom: 24px;
+}
+
+.card-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 6px;
+}
+
+.card-header p {
+  font-size: 12.5px;
+  color: #6b7280;
+}
+
+/* ─── Form ───────────────────────────────────────────────── */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #4b5563;
+  text-transform: uppercase;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-input.no-icon {
+  width: 100%;
+  padding: 12px 14px;
+  background: #e8edff;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #1f2937;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-input.no-icon::placeholder {
+  color: #8c9bb3;
+}
+
+.form-input.no-icon:focus {
+  border-color: #4338ca;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.10);
+}
+
+.input-hint {
+  font-size: 10.5px;
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+
+/* ─── Register Button ───────────────────────────────────────── */
+.btn-register {
+  width: 100%;
+  padding: 12px;
+  background: #5046e5;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  margin-top: 8px;
+}
+
+.btn-register:hover {
+  background: #4338ca;
+}
+
+.btn-register:active {
+  transform: scale(0.98);
+}
+
+.arrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ─── Divider ────────────────────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 24px 0 20px;
+  gap: 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #f3f4f6;
+}
+
+.divider span {
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ─── Social Buttons ─────────────────────────────────────── */
+.social-row {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-social {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: #f8fafc;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1f2937;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-social:hover {
+  background: #f1f5f9;
+}
+
+.btn-social:active {
+  transform: scale(0.98);
+}
+
+/* ─── Login Link ────────────────────────────────────────────── */
+.login-row {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 13.5px;
+  color: #6b7280;
+}
+
+.login-link {
+  color: #4338ca;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.login-link:hover {
+  color: #3730a3;
+  text-decoration: underline;
+}
