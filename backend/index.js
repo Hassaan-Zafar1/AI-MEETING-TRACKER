@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/meetings', require('./routes/meetingRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
+// app.use('/api/users', require('./routes/userRoutes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
@@ -44,7 +44,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-require('./sockets/taskSocket')(io);
+// require('./sockets/taskSocket')(io);
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
