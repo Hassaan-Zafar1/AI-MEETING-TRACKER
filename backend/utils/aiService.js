@@ -1,19 +1,24 @@
-const OpenAI = require('openai');
+require('dotenv').config();
+const crypto = require('crypto');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Initialize clients based on available API keys
-let openai = null;
+// Initialize Gemini client
 let gemini = null;
-
-if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-}
 
 if (process.env.GEMINI_API_KEY) {
   gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  console.log('✅ Gemini API initialized with key:', process.env.GEMINI_API_KEY.substring(0, 15) + '...');
+} else {
+  console.error('❌ GEMINI_API_KEY not found in .env file!');
 }
+
+// Simple in-memory cache for extraction results
+const extractionCache = new Map();
+let lastRequestTime = 0;
+
+const getCacheKey = (rawNotes, meetingDate) => {
+  return crypto.createHash('md5').update(rawNotes + meetingDate).digest('hex');
+};
 
 const extractionPrompt = (rawNotes, meetingDate) => `
 You are an expert meeting analyst. Analyze the following meeting notes carefully.
@@ -66,69 +71,94 @@ const mockExtractActionItems = (rawNotes, meetingDate) => {
   };
 };
 
+// Apply request throttling to respect free tier rate limits
+const throttleRequest = async () => {
+  const delayMs = parseInt(process.env.GEMINI_REQUEST_DELAY_MS || '1500', 10);
+  const timeSinceLastRequest = Date.now() - lastRequestTime;
+  
+  if (timeSinceLastRequest < delayMs) {
+    const waitTime = delayMs - timeSinceLastRequest;
+    console.log(`⏳ Throttling: waiting ${waitTime}ms before next API call...`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  
+  lastRequestTime = Date.now();
+};
+
 // Extract using Gemini API
 const extractWithGemini = async (rawNotes, meetingDate) => {
   try {
-    const model = gemini.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const response = await model.generateContent(extractionPrompt(rawNotes, meetingDate));
-    const content = response.response.text();
-    const result = JSON.parse(content);
-    return result;
-  } catch (error) {
-    console.error('Gemini extraction error:', error.message);
-    throw new Error('Failed to extract action items using Gemini');
-  }
-};
+    if (!gemini) {
+      throw new Error('Gemini API not initialized. Check GEMINI_API_KEY in .env');
+    }
 
-// Extract using OpenAI API
-const extractWithOpenAI = async (rawNotes, meetingDate) => {
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a precise meeting analyst. Always respond with valid JSON only.',
-        },
+    // Check cache first
+    const cacheKey = getCacheKey(rawNotes, meetingDate);
+    if (extractionCache.has(cacheKey)) {
+      console.log('💾 Using cached extraction result');
+      return extractionCache.get(cacheKey);
+    }
+
+    // Apply throttling before API call
+    await throttleRequest();
+
+    console.log('📝 Calling Gemini API for extraction...');
+    const model = gemini.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+    
+    const response = await model.generateContent({
+      contents: [
         {
           role: 'user',
-          content: extractionPrompt(rawNotes, meetingDate),
+          parts: [{ text: extractionPrompt(rawNotes, meetingDate) }],
         },
       ],
-      response_format: { type: 'json_object' },
-      temperature: 0.1,
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.1,
+      },
     });
 
-    const content = response.choices[0].message.content;
-    const result = JSON.parse(content);
+    const content = response.response.text();
+    console.log('✅ Gemini response received');
+
+    // Parse JSON
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (e) {
+      // Try to extract JSON if wrapped in markdown
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('Could not parse JSON from Gemini response');
+      }
+    }
+
+    console.log(`✅ Successfully extracted ${result.actionItems?.length || 0} action items`);
+    
+    // Cache the result
+    extractionCache.set(cacheKey, result);
+    
     return result;
   } catch (error) {
-    console.error('OpenAI extraction error:', error.message);
-    throw new Error('Failed to extract action items using OpenAI');
+    console.error('❌ Gemini extraction error:', error.message);
+    throw new Error('Failed to extract action items: ' + error.message);
   }
 };
 
+// Main extraction function
 const extractActionItems = async (rawNotes, meetingDate) => {
   try {
-    // Try Gemini first if available
-    if (gemini) {
-      console.log('Using Gemini API for extraction');
-      return await extractWithGemini(rawNotes, meetingDate);
+    if (!gemini) {
+      console.warn('⚠️ Gemini API not configured. Using mock data for testing.');
+      return mockExtractActionItems(rawNotes, meetingDate);
     }
 
-    // Fall back to OpenAI if available
-    if (openai) {
-      console.log('Using OpenAI API for extraction');
-      return await extractWithOpenAI(rawNotes, meetingDate);
-    }
-
-    // Use mock if no API keys configured
-    console.warn('No API keys configured. Using mock extraction.');
-    return mockExtractActionItems(rawNotes, meetingDate);
+    return await extractWithGemini(rawNotes, meetingDate);
   } catch (error) {
-    console.error('Extraction error:', error.message);
-    // Fall back to mock on error
-    console.warn('Falling back to mock extraction due to error');
+    console.error('❌ Extraction error:', error.message);
+    console.warn('⚠️ Falling back to mock extraction due to error');
     return mockExtractActionItems(rawNotes, meetingDate);
   }
 };
