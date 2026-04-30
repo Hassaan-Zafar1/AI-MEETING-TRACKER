@@ -1,0 +1,101 @@
+.card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px;
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.risk {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.riskBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.priorityBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.description {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gray-800);
+  margin-bottom: 10px;
+  padding-left: 8px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-left: 8px;
+}
+
+.assignee {
+  font-size: 12px;
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.dueDate {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+.overdue {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.statusSelect {
+  font-size: 12px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  background: var(--gray-50);
+}
+
+.commentsToggle {
+  background: none;
+  color: var(--primary);
+  font-size: 12px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.comments {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.comment {
+  font-size: 12px;
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+
+.addComment input {
+  font-size: 12px;
+  padding: 6px 10px;
+  margin-top: 8px;
+}
