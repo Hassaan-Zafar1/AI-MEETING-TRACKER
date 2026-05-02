@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { register } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
-import styles from './AuthPage.module.css';
+import styles from './LoginPage.module.css';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -57,76 +57,81 @@ const RegisterPage = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Meeting Tracker</h1>
-        <p className={styles.subtitle}>Create your free account</p>
+      <div className={styles.loginCard}>
+        <div className={styles.loginIllustration}>
+          <img src="/register-illustration.png" alt="Register Illustration" />
+        </div>
+        <div className={styles.loginFormContainer}>
+          <h1 className={styles.title}>Meeting Tracker</h1>
+          <p className={styles.subtitle}>Create your free account</p>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="name">Full name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Smith"
-              required
-              autoFocus
-            />
-          </div>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.field}>
+              <label htmlFor="name">Full name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Smith"
+                required
+                autoFocus
+              />
+            </div>
 
-          <div className={styles.field}>
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
+            <div className={styles.field}>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
 
-          <div className={styles.field}>
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 6 characters"
-              required
-            />
-          </div>
+            <div className={styles.field}>
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min. 6 characters"
+                required
+              />
+            </div>
 
-          <div className={styles.field}>
-            <label htmlFor="confirmPassword">Confirm password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repeat your password"
-              required
-            />
-            {/* Live mismatch warning — shows as user types */}
-            {confirmPassword && password !== confirmPassword && (
-              <span className={styles.fieldError}>Passwords do not match</span>
-            )}
-          </div>
+            <div className={styles.field}>
+              <label htmlFor="confirmPassword">Confirm password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat your password"
+                required
+              />
+              {/* Live mismatch warning — shows as user types */}
+              {confirmPassword && password !== confirmPassword && (
+                <span className={styles.fieldError}>Passwords do not match</span>
+              )}
+            </div>
 
-          <button
-            type="submit"
-            disabled={isLoading || (!!confirmPassword && password !== confirmPassword)}
-            className={styles.button}
-          >
-            {isLoading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isLoading || (!!confirmPassword && password !== confirmPassword)}
+              className={styles.button}
+            >
+              {isLoading ? 'Creating account...' : 'Create account'}
+            </button>
+          </form>
 
-        <p className={styles.link}>
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
+          <p className={styles.link}>
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
