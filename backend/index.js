@@ -21,7 +21,6 @@ connectDB();
 app.use(helmet());
 
 app.use(cors({ origin: 'https://ai-meeting-tracker-nu.vercel.app', credentials: true }));
-app.options(/.*/, cors());
 
 app.use(express.json());
 app.use(morgan('dev'));
