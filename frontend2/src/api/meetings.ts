@@ -19,7 +19,14 @@ export const createMeeting = async (payload: {
   date: string;
   participants?: string[];
 }) => {
-  const { data } = await api.post('/meetings', payload);
+  // Convert local datetime to UTC
+  const localDate = new Date(payload.date);
+  const utcDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+  
+  const { data } = await api.post('/meetings', {
+    ...payload,
+    date: utcDate.toISOString(),
+  });
   return data as Meeting;
 };
 
