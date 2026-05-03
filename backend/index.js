@@ -14,6 +14,7 @@ const io = new Server(server, {
   cors: {
     origin: ['https://ai-meeting-tracker-9oh5jrtao-hassaan-zafar1s-projects.vercel.app/',
       'https://meeting-tracker.mhzafar07.workers.dev/',
+      'https://ai-meeting-tracker-nu.vercel.app/login',
       'http://localhost:3000',
       process.env.CLIENT_URL
     ],
