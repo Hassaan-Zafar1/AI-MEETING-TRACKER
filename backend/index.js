@@ -6,8 +6,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-
 const connectDB = require('./config/database');
+// Initialize reminder queue processor
+const { reminderQueue } = require('./jobs/reminderQueue');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -49,4 +51,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Redis reminder queue initialized and ready to process jobs');
 });

@@ -1,4 +1,6 @@
 const Bull = require('bull');
+const User = require('../models/User');
+const { sendReminderEmail } = require('../utils/emailService');
 
 // Create a queue named 'reminders' connected to Redis
 // Bull uses Redis to persist jobs — if server restarts, jobs survive
@@ -9,18 +11,33 @@ const reminderQueue = new Bull('reminders', {
 // Define what happens when a job is processed
 // This function runs when a scheduled reminder fires
 reminderQueue.process(async (job) => {
-  const { taskDescription, assigneeName, dueDate } = job.data;
+  const { taskId, taskDescription, assigneeName, assigneeId, dueDate } = job.data;
 
-  // In a real app, you'd send an email here
-  // For now we just log it
-  console.log(`REMINDER: "${taskDescription}" assigned to ${assigneeName} is due on ${dueDate}`);
+  console.log(`Processing reminder for task: "${taskDescription}"`);
 
-  // Example with nodemailer or Resend would go here:
-  // await sendEmail({
-  //   to: assigneeEmail,
-  //   subject: `Task due soon: ${taskDescription}`,
-  //   html: `<p>Your task is due on ${dueDate}</p>`
-  // });
+  try {
+    // Fetch user email from database if assigneeId is provided
+    let userEmail = null;
+    if (assigneeId) {
+      const user = await User.findById(assigneeId).select('email');
+      if (user) {
+        userEmail = user.email;
+      }
+    }
+
+    // Send email reminder if email is available
+    if (userEmail) {
+      await sendReminderEmail(userEmail, taskDescription, dueDate, assigneeName);
+      console.log(`Reminder email sent for task: "${taskDescription}" to ${userEmail}`);
+    } else {
+      console.warn(
+        `No email found for assignee "${assigneeName}". Task: "${taskDescription}"`
+      );
+    }
+  } catch (error) {
+    console.error(`Error processing reminder job for task "${taskDescription}":`, error.message);
+    throw error; // Re-throw to trigger retry logic
+  }
 });
 
 // This function schedules a reminder job
@@ -43,6 +60,7 @@ const scheduleReminder = async (task) => {
       taskId: task._id,
       taskDescription: task.description,
       assigneeName: task.assigneeName,
+      assigneeId: task.assignee, // Pass the assignee ID to fetch email later
       dueDate: task.dueDate,
     },
     {
