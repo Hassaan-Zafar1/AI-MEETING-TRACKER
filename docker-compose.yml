@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  # Only Redis — MongoDB comes from Atlas
+  redis:
+    image: redis:7-alpine
+    container_name: meeting-tracker-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:
+    driver: local
