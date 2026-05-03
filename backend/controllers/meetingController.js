@@ -53,7 +53,7 @@ const createMeeting = async (req, res) => {
 
     const meeting = await Meeting.create({
       title,
-      date,
+      date: new Date(date),
       participants: participants || [],
       createdBy: req.user._id,
     });

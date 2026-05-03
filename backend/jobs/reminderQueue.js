@@ -44,6 +44,10 @@ reminderQueue.process(async (job) => {
 const scheduleReminder = async (task) => {
   if (!task.dueDate) return;
 
+  const dueDate = new Date(task.dueDate);
+  console.log(`DEBUG: Due date: ${dueDate.toISOString()}`);
+  console.log(`DEBUG: Current time: ${new Date().toISOString()}`);
+
   // Calculate how many milliseconds until 24 hours before the due date
   const reminderTime = new Date(task.dueDate).getTime() - 24 * 60 * 60 * 1000;
   const delay = reminderTime - Date.now();
