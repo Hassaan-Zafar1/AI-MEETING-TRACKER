@@ -42,14 +42,17 @@ const sendReminderEmail = async (to, taskDescription, dueDate, assigneeName) => 
                 📋 Task Reminder
               </h2>
               
-              <p style="margin-top: 20px;">Hi <strong>${assigneeName}</strong>,</p>
+<p style="margin-top: 20px;">Hi,</p>
+              
+              <p>This is a reminder about an action item from your meeting:</p>
               
               <div style="background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0;">
                 <p style="margin: 10px 0;"><strong>Task:</strong> ${taskDescription}</p>
+                <p style="margin: 10px 0;"><strong>Assigned to:</strong> ${assigneeName}</p>
                 <p style="margin: 10px 0;"><strong>Due Date:</strong> ${dueDateFormatted}</p>
               </div>
               
-              <p>This is a reminder that your task is due soon. Please ensure you complete it on time.</p>
+              <p>Please ensure this action item is completed on time.</p>
               
               <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
                 <p>This is an automated reminder from AI Meeting Tracker</p>

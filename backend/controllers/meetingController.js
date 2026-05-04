@@ -129,7 +129,8 @@ const extractMeetingItems = async (req, res) => {
     for (const item of savedItems) {
       if (item.dueDate) {
         try {
-          await scheduleReminder(item);
+          // Pass the current user ID (meeting creator) for reminder notifications
+          await scheduleReminder(item, req.user._id);
         } catch (reminderError) {
           console.warn(`Failed to schedule reminder for task "${item.description}":`, reminderError.message);
           // Don't fail the extraction just because reminder scheduling failed

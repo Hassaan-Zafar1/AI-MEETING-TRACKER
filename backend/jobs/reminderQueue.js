@@ -57,18 +57,19 @@ try {
 // This function runs when a scheduled reminder fires
 if (reminderQueue) {
   reminderQueue.process(async (job) => {
-    const { taskId, taskDescription, assigneeName, assigneeId, dueDate, dueTime } = job.data;
+    const { taskId, taskDescription, assigneeName, notifyUserId, dueDate, dueTime } = job.data;
 
     console.log(`🔔 [Reminder Job] Processing reminder for task: "${taskDescription}"`);
+    console.log(`🔔 [Reminder Job] Assigned to: ${assigneeName}`);
 
     try {
-      // Fetch user email from database if assigneeId is provided
+      // Fetch the user to notify (meeting creator)
       let userEmail = null;
-      if (assigneeId) {
-        const user = await User.findById(assigneeId).select('email');
+      if (notifyUserId) {
+        const user = await User.findById(notifyUserId).select('email name');
         if (user) {
           userEmail = user.email;
-          console.log(`📧 [Reminder Job] Found user email: ${userEmail}`);
+          console.log(`📧 [Reminder Job] Found user to notify: ${user.name} (${userEmail})`);
         }
       }
 
@@ -81,14 +82,14 @@ if (reminderQueue) {
         emailDueDate = dueDateTime.toISOString();
       }
 
-      // Send email reminder if email is available
+      // Send email reminder to the user
       if (userEmail) {
         console.log(`📤 [Reminder Job] Sending email to ${userEmail}...`);
         await sendReminderEmail(userEmail, taskDescription, emailDueDate, assigneeName);
-        console.log(`✅ [Reminder Job] Reminder email sent successfully for task: "${taskDescription}" to ${userEmail}`);
+        console.log(`✅ [Reminder Job] Reminder email sent successfully to ${userEmail}`);
       } else {
         console.warn(
-          `⚠️ [Reminder Job] No email found for assignee "${assigneeName}". Task: "${taskDescription}"`
+          `⚠️ [Reminder Job] Could not find email for notification user ID: ${notifyUserId}`
         );
       }
     } catch (error) {
@@ -99,7 +100,7 @@ if (reminderQueue) {
 }
 
 // This function schedules a reminder job
-const scheduleReminder = async (task) => {
+const scheduleReminder = async (task, notifyUserId) => {
   if (!task.dueDate) return;
   
   // If Redis is not available, skip reminder scheduling
@@ -171,13 +172,20 @@ const scheduleReminder = async (task) => {
   }
 
   try {
+    console.log(`📌 [Scheduling] Task ID: ${task._id}`);
+    console.log(`📌 [Scheduling] Task description: "${task.description}"`);
+    console.log(`📌 [Scheduling] Assigned to: ${task.assigneeName}`);
+    console.log(`📌 [Scheduling] Notify user ID: ${notifyUserId}`);
+    console.log(`📌 [Scheduling] Due date & time: ${task.dueDate} at ${task.dueTime}`);
+    console.log(`📌 [Scheduling] Reminder will fire in ${Math.round(delay / 1000 / 60)} minutes`);
+    
     // Add job to queue with a delay
-    await reminderQueue.add(
+    const job = await reminderQueue.add(
       {
         taskId: task._id,
         taskDescription: task.description,
         assigneeName: task.assigneeName,
-        assigneeId: task.assignee, // Pass the assignee ID to fetch email later
+        notifyUserId: notifyUserId, // User to notify (meeting creator)
         dueDate: task.dueDate,
         dueTime: task.dueTime,
       },
@@ -188,9 +196,9 @@ const scheduleReminder = async (task) => {
       }
     );
 
-    console.log(`Reminder scheduled for task: "${task.description}"`);
+    console.log(`✅ [Scheduling] Reminder scheduled successfully! Job ID: ${job.id}`);
   } catch (error) {
-    console.error(`Failed to schedule reminder for task "${task.description}":`, error.message);
+    console.error(`❌ [Scheduling] Failed to schedule reminder for task "${task.description}":`, error.message);
     // Don't re-throw - let extraction continue even if reminder fails
   }
 };
@@ -198,12 +206,22 @@ const scheduleReminder = async (task) => {
 // Log successful jobs
 if (reminderQueue) {
   reminderQueue.on('completed', (job) => {
-    console.log(`Reminder job ${job.id} completed`);
+    console.log(`✅ [Reminder Job] Job ${job.id} completed successfully`);
   });
 
   // Log failed jobs
   reminderQueue.on('failed', (job, err) => {
-    console.error(`Reminder job ${job.id} failed:`, err.message);
+    console.error(`❌ [Reminder Job] Job ${job.id} failed:`, err.message);
+  });
+
+  // Log when jobs are added
+  reminderQueue.on('global:added', (jobId, data) => {
+    console.log(`📌 [Reminder Queue] New job added: ${jobId}`);
+  });
+
+  // Log when jobs are processing
+  reminderQueue.on('global:progress', (jobId, progress) => {
+    console.log(`⏳ [Reminder Queue] Job ${jobId} progress: ${progress}%`);
   });
 }
 
