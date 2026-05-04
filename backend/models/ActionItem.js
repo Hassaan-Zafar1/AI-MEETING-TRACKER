@@ -36,6 +36,10 @@ const actionItemSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    dueTime: {
+      type: String,
+      default: null, // Format: "HH:MM" (24-hour format)
+    },
     priority: {
       type: String,
       enum: ['low', 'medium', 'high'],

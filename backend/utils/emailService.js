@@ -19,6 +19,8 @@ const transporter = nodemailer.createTransport({
  */
 const sendReminderEmail = async (to, taskDescription, dueDate, assigneeName) => {
   try {
+    console.log(`📧 [Email Service] Preparing reminder email for ${to}...`);
+    
     const dueDateFormatted = new Date(dueDate).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -58,11 +60,13 @@ const sendReminderEmail = async (to, taskDescription, dueDate, assigneeName) => 
       `,
     };
 
+    console.log(`📤 [Email Service] Sending email via Gmail...`);
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${to}: ${info.response}`);
+    console.log(`✅ [Email Service] Email sent successfully to ${to}: ${info.response}`);
     return info;
   } catch (error) {
-    console.error(`Failed to send email to ${to}:`, error.message);
+    console.error(`❌ [Email Service] Failed to send email to ${to}:`, error.message);
+    console.error(`Error details:`, error);
     throw error;
   }
 };

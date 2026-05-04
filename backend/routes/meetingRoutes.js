@@ -6,6 +6,7 @@ const {
   createMeeting,
   saveMeetingNotes,
   extractMeetingItems,
+  deleteMeeting,
 } = require('../controllers/meetingController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -14,7 +15,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.use(protect);
 
 router.route('/').get(getMeetings).post(createMeeting);
-router.route('/:id').get(getMeetingById);
+router.route('/:id').get(getMeetingById).delete(deleteMeeting);
 router.route('/:id/notes').put(saveMeetingNotes);
 router.route('/:id/extract').post(extractMeetingItems);
 

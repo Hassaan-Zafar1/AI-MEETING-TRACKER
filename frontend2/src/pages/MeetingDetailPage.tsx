@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import {
   getMeeting,
   saveMeetingNotes,
   extractActionItems,
+  deleteMeeting,
 } from '../api/meetings';
 import { updateTaskStatus } from '../api/tasks';
 import { useSocket } from '../hooks/useSocket';
@@ -25,6 +26,7 @@ const COLUMN_LABELS = {
 
 const MeetingDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const socket = useSocket();
   const [notes, setNotes] = useState('');
@@ -101,6 +103,19 @@ const MeetingDetailPage = () => {
     }
   );
 
+  // Delete meeting mutation
+  const deleteMeetingMutation = useMutation(
+    () => deleteMeeting(id!),
+    {
+      onSuccess: () => {
+        toast.success('Meeting deleted successfully!');
+        queryClient.invalidateQueries({ queryKey: ['meetings'] });
+        navigate('/');
+      },
+      onError: () => toast.error('Failed to delete meeting'),
+    }
+  );
+
   if (isLoading) return <div className={styles.loading}>Loading meeting...</div>;
   if (!data) return <div>Meeting not found</div>;
 
@@ -125,6 +140,17 @@ const MeetingDetailPage = () => {
             })}
           </p>
         </div>
+        <button
+          onClick={() => {
+            if (window.confirm('Are you sure you want to delete this meeting? This action cannot be undone.')) {
+              deleteMeetingMutation.mutate();
+            }
+          }}
+          disabled={deleteMeetingMutation.isLoading}
+          className={styles.deleteBtn}
+        >
+          {deleteMeetingMutation.isLoading ? 'Deleting...' : 'Delete Meeting'}
+        </button>
       </div>
 
       {/* AI Summary (if extracted) */}

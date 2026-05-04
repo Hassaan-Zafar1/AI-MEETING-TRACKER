@@ -31,6 +31,7 @@ For each action item, determine:
 - description: what needs to be done (clear, actionable sentence)
 - assigneeName: who is responsible (use exact name from notes, or "Unassigned")
 - dueDate: deadline if mentioned (ISO format YYYY-MM-DD, or null if not mentioned)
+- dueTime: time if mentioned (HH:MM in 24-hour format, or null if not mentioned). Look for phrases like "by 2pm", "at 3:30", "before 5pm", etc.
 - priority: "high" if urgent/critical/ASAP, "low" if minor, otherwise "medium"
 - riskFlag: true if due date is within 48 hours of meeting date OR if no due date but seems urgent
 
@@ -47,6 +48,7 @@ IMPORTANT: Return ONLY a valid JSON object with no markdown, no explanation, jus
       "description": "...",
       "assigneeName": "...",
       "dueDate": "..." or null,
+      "dueTime": "HH:MM" or null,
       "priority": "low|medium|high",
       "riskFlag": true|false
     }
@@ -64,6 +66,7 @@ const mockExtractActionItems = (rawNotes, meetingDate) => {
         description: 'Review meeting notes and identify next steps',
         assigneeName: 'Unassigned',
         dueDate: null,
+        dueTime: null,
         priority: 'medium',
         riskFlag: false,
       },

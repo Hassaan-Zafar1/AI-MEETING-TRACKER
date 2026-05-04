@@ -14,7 +14,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: 'https://ai-meeting-tracker-nu.vercel.app',
+    origin: ['https://ai-meeting-tracker-nu.vercel.app', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -22,7 +22,7 @@ connectDB();
 
 app.use(helmet());
 
-app.use(cors({ origin: 'https://ai-meeting-tracker-nu.vercel.app', credentials: true }));
+app.use(cors({ origin: ['https://ai-meeting-tracker-nu.vercel.app', 'http://localhost:3000'], credentials: true }));
 
 app.use(express.json());
 app.use(morgan('dev'));
