@@ -57,12 +57,13 @@ const TaskCard = ({ task, onStatusChange }: Props) => {
           {task.assignee?.name || task.assigneeName}
         </span>
 
-        {/* Due date */}
+      {/* Due date */}
         {task.dueDate && (
           <span
             className={`${styles.dueDate} ${isOverdue ? styles.overdue : ''}`}
           >
             Due: {format(new Date(task.dueDate), 'MMM d')}
+            {task.dueTime && ` at ${task.dueTime}`}
           </span>
         )}
       </div>

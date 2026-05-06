@@ -7,6 +7,37 @@
 
 .header {
   margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header div {
+  flex: 1;
+}
+
+.deleteBtn {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.deleteBtn:hover:not(:disabled) {
+  background: #fecaca;
+  color: #991b1b;
+  border-color: #dc2626;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .header h1 {
