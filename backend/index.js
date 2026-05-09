@@ -6,21 +6,23 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
-
 const connectDB = require('./config/database');
+// Initialize reminder queue processor
+const { reminderQueue } = require('./jobs/reminderQueue');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL,
-    methods: ['GET', 'POST'],
+    origin: ['https://ai-meeting-tracker-nu.vercel.app', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
 connectDB();
 
 app.use(helmet());
 
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cors({ origin: ['https://ai-meeting-tracker-nu.vercel.app', 'http://localhost:3000'], credentials: true }));
 
 app.use(express.json());
 app.use(morgan('dev'));
@@ -49,4 +51,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log('Redis reminder queue initialized and ready to process jobs');
 });

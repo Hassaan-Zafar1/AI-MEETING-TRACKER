@@ -10,9 +10,10 @@ export const useSocket = () => {
 
   useEffect(() => {
     if (!user) return;
+    const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     // Connect to the Socket.IO server
-    socketRef.current = io('http://localhost:5000', {
+    socketRef.current = io(SOCKET_URL, {
       // Send JWT token for authentication
       auth: { token: user.token },
     });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -17,6 +17,13 @@ const DashboardPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
+
+  // Listen for custom event from Sidebar
+  useEffect(() => {
+    const handleOpenModal = () => setShowForm(true);
+    window.addEventListener('openCreateMeetingModal', handleOpenModal);
+    return () => window.removeEventListener('openCreateMeetingModal', handleOpenModal);
+  }, []);
 
   // useQuery automatically fetches data and manages loading/error states
   // 'meetings' is the cache key - React Query tracks this
@@ -62,9 +69,6 @@ const DashboardPage = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>Dashboard</h1>
-        <button onClick={() => setShowForm(true)} className={styles.createBtn}>
-          + New Meeting
-        </button>
       </div>
 
       {/* Analytics Summary Cards */}
@@ -89,13 +93,13 @@ const DashboardPage = () => {
       {chartData.length > 0 && (
         <div className={styles.chartContainer}>
           <h2>Task Status Overview</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={chartData}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={chartData} layout="vertical">
+              <XAxis type="number" hide />
+              <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={100} tick={{ fontSize: 13, fill: '#64748b' }} />
+              <Tooltip cursor={{ fill: '#f8fafc' }} />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', color: '#64748b', paddingTop: '10px' }} />
+              <Bar dataKey="count" fill="#3b82f6" radius={[0, 99, 99, 0]} barSize={24} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -117,9 +121,9 @@ const DashboardPage = () => {
                 />
               </div>
               <div className={styles.field}>
-                <label>Date</label>
+                <label>Date & Time</label>
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   required
@@ -139,31 +143,33 @@ const DashboardPage = () => {
       )}
 
       {/* Meetings List */}
-      <div className={styles.meetingsList}>
+      <div id="recent-meetings" className={styles.meetingsList}>
         <h2>Recent Meetings</h2>
         {meetings?.length === 0 && (
           <p className={styles.empty}>No meetings yet. Create your first one!</p>
         )}
-        {meetings?.map((meeting) => (
-          <div
-            key={meeting._id}
-            className={styles.meetingCard}
-            onClick={() => navigate(`/meeting/${meeting._id}`)}
-          >
-            <div className={styles.meetingInfo}>
-              <h3>{meeting.title}</h3>
-              <span>{format(new Date(meeting.date), 'MMM d, yyyy')}</span>
+        <div className={styles.meetingsGrid}>
+          {meetings?.map((meeting) => (
+            <div
+              key={meeting._id}
+              className={styles.meetingCard}
+              onClick={() => navigate(`/meeting/${meeting._id}`)}
+            >
+              <div className={styles.meetingInfo}>
+                <h3>{meeting.title}</h3>
+                <span>{format(new Date(meeting.date), 'MMM d, yyyy, h:mm a')}</span>
+              </div>
+              <div className={styles.meetingMeta}>
+                <span className={styles.creator}>Host: {meeting.createdBy?.name}</span>
+                {meeting.isProcessed ? (
+                  <span className={styles.badge + ' ' + styles.processed}>AI Processed</span>
+                ) : (
+                  <span className={styles.badge}>Not processed</span>
+                )}
+              </div>
             </div>
-            <div className={styles.meetingMeta}>
-              {meeting.isProcessed ? (
-                <span className={styles.badge + ' ' + styles.processed}>AI Processed</span>
-              ) : (
-                <span className={styles.badge}>Not processed</span>
-              )}
-              <span className={styles.creator}>by {meeting.createdBy?.name}</span>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

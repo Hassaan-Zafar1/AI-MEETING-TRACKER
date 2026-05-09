@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
 
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import MeetingDetailPage from './pages/MeetingDetailPage';
 import Navbar from './components/Navbar';
+
+// Dynamically load pages using React.lazy
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const MeetingDetailPage = lazy(() => import('./pages/MeetingDetailPage'));
 
 // QueryClient manages all API call caching
 const queryClient = new QueryClient({
@@ -84,31 +86,33 @@ function AppRoutes() {
   return (
     <div className="app">
       <Toaster position="top-right" /> {/* notification toasts */}
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+      <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', color: '#64748b' }}>Loading...</div>}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected routes - wrapped in PrivateRoute */}
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Navbar />
-              <DashboardPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/meeting/:id"
-          element={
-            <PrivateRoute>
-              <Navbar />
-              <MeetingDetailPage />
-            </PrivateRoute>
-          }
-        />
-      </Routes>
+          {/* Protected routes - wrapped in PrivateRoute */}
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Navbar />
+                <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/meeting/:id"
+            element={
+              <PrivateRoute>
+                <Navbar />
+                <MeetingDetailPage />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
     </div>
   );
 }

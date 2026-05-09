@@ -1,8 +1,10 @@
 import axios from 'axios';
 
 // Create an axios instance with default settings
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // your backend URL
+  baseURL: `${API_URL}/api`, // your backend URL
   headers: {
     'Content-Type': 'application/json',
   },
@@ -31,7 +33,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid - log out the user
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Only redirect if not already on the auth pages to avoid refresh loops
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

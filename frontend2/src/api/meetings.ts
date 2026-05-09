@@ -19,7 +19,10 @@ export const createMeeting = async (payload: {
   date: string;
   participants?: string[];
 }) => {
-  const { data } = await api.post('/meetings', payload);
+  const { data } = await api.post('/meetings', {
+    ...payload,
+    date: new Date(payload.date).toISOString(),
+  });
   return data as Meeting;
 };
 
@@ -33,4 +36,10 @@ export const saveMeetingNotes = async (id: string, rawNotes: string) => {
 export const extractActionItems = async (id: string) => {
   const { data } = await api.post(`/meetings/${id}/extract`);
   return data as { summary: string; actionItems: ActionItem[] };
+};
+
+// Delete a meeting
+export const deleteMeeting = async (id: string) => {
+  const { data } = await api.delete(`/meetings/${id}`);
+  return data;
 };

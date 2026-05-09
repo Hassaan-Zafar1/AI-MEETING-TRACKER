@@ -1,0 +1,146 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+
+.loginCard {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 750px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  display: flex;
+  overflow: hidden;
+}
+
+.loginIllustration {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: white;
+}
+
+.loginIllustration img {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  object-fit: contain;
+}
+
+.loginFormContainer {
+  flex: 1;
+  padding: 50px 60px 50px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.field input {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #64748b;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: white;
+}
+
+.field input:focus {
+  border-color: #3b82f6;
+}
+
+.button {
+  background: linear-gradient(180deg, #4b7bc7 0%, #294c7b 100%);
+  color: white;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.link {
+  text-align: center;
+  font-size: 13px;
+  color: #334155;
+  margin-top: 24px;
+}
+
+.link a {
+  color: #294c7b;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .loginCard {
+    flex-direction: column;
+    max-width: 400px;
+    margin: 20px;
+  }
+  .loginIllustration {
+    padding: 40px 40px 0 40px;
+  }
+  .loginIllustration img {
+    max-width: 200px; /* Reduce image size for mobile */
+  }
+  .loginFormContainer {
+    padding: 30px 40px 40px 40px;
+  }
+}
+
+.fieldError {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #ef4444;
+}

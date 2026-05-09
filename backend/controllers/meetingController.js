@@ -53,7 +53,7 @@ const createMeeting = async (req, res) => {
 
     const meeting = await Meeting.create({
       title,
-      date,
+      date: new Date(date),
       participants: participants || [],
       createdBy: req.user._id,
     });
@@ -128,7 +128,13 @@ const extractMeetingItems = async (req, res) => {
     // (Bull queue handles this in the background)
     for (const item of savedItems) {
       if (item.dueDate) {
-        await scheduleReminder(item);
+        try {
+          // Pass the current user ID (meeting creator) for reminder notifications
+          await scheduleReminder(item, req.user._id);
+        } catch (reminderError) {
+          console.warn(`Failed to schedule reminder for task "${item.description}":`, reminderError.message);
+          // Don't fail the extraction just because reminder scheduling failed
+        }
       }
     }
 
@@ -142,10 +148,37 @@ const extractMeetingItems = async (req, res) => {
   }
 };
 
+// DELETE /api/meetings/:id - delete a meeting (only creator can delete)
+const deleteMeeting = async (req, res) => {
+  try {
+    const meeting = await Meeting.findById(req.params.id);
+
+    if (!meeting) {
+      return res.status(404).json({ message: 'Meeting not found' });
+    }
+
+    // Check if user is the creator
+    if (meeting.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the meeting creator can delete this meeting' });
+    }
+
+    // Delete all action items associated with this meeting
+    await ActionItem.deleteMany({ meetingId: meeting._id });
+
+    // Delete the meeting
+    await Meeting.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Meeting and all associated action items deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getMeetings,
   getMeetingById,
   createMeeting,
   saveMeetingNotes,
   extractMeetingItems,
+  deleteMeeting,
 };

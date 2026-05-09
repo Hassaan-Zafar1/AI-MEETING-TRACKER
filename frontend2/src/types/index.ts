@@ -28,6 +28,7 @@ export interface ActionItem {
   assigneeName: string;
   assignee: User | null;
   dueDate: string | null;
+  dueTime: string | null;
   priority: 'low' | 'medium' | 'high';
   status: 'pending' | 'in-progress' | 'done';
   riskFlag: boolean;
