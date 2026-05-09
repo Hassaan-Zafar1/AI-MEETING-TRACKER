@@ -134,7 +134,109 @@ const sendMeetingNotificationEmail = async (to, meetingTitle, meetingDate, userN
   }
 };
 
+/**
+ * Send an OTP email for registration verification
+ * @param {string} to - Recipient email address
+ * @param {string} otp - The one-time password
+ * @param {string} userName - Name of the user
+ * @returns {Promise}
+ */
+const sendOTPEmail = async (to, otp, userName) => {
+  try {
+    const mailOptions = {
+      from: `"Meeting Tracker" <${process.env.EMAIL_USER}>`,
+      to: to,
+      subject: `Verify Your Account - Meeting Tracker`,
+      text: `Hi ${userName},\n\nWelcome to Meeting Tracker! To complete your registration, please use the following One-Time Password (OTP):\n\n${otp}\n\nThis OTP is valid for 10 minutes. Please do not share it with anyone.\n\nThis is an automated notification from AI Meeting Tracker.`,
+      html: `
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #2c3e50; border-bottom: 3px solid #8e44ad; padding-bottom: 10px;">
+                🔐 Account Verification
+              </h2>
+              
+              <p style="margin-top: 20px;">Hi <strong>${userName}</strong>,</p>
+              
+              <p>Welcome to Meeting Tracker! To complete your registration, please use the following One-Time Password (OTP):</p>
+              
+              <div style="background-color: #f8f9fa; border-left: 4px solid #8e44ad; padding: 15px; margin: 20px 0; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 5px;">
+                ${otp}
+              </div>
+              
+              <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
+                <p>This is an automated notification from AI Meeting Tracker</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`OTP email sent successfully to ${to}`);
+    return info;
+  } catch (error) {
+    console.error(`Failed to send OTP email to ${to}:`, error.message);
+    throw error;
+  }
+};
+
+/**
+ * Send an OTP email for password reset
+ * @param {string} to - Recipient email address
+ * @param {string} otp - The one-time password
+ * @param {string} userName - Name of the user
+ * @returns {Promise}
+ */
+const sendPasswordResetOTPEmail = async (to, otp, userName) => {
+  try {
+    const mailOptions = {
+      from: `"Meeting Tracker" <${process.env.EMAIL_USER}>`,
+      to: to,
+      subject: `Reset Your Password - Meeting Tracker`,
+      text: `Hi ${userName},\n\nYou requested to reset your password. Please use the following One-Time Password (OTP):\n\n${otp}\n\nThis OTP is valid for 10 minutes. If you did not request this, please ignore this email.\n\nThis is an automated notification from AI Meeting Tracker.`,
+      html: `
+        <html>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #e74c3c; border-bottom: 3px solid #e74c3c; padding-bottom: 10px;">
+                🔑 Password Reset Request
+              </h2>
+              
+              <p style="margin-top: 20px;">Hi <strong>${userName}</strong>,</p>
+              
+              <p>You recently requested to reset your password for your Meeting Tracker account. Please use the following One-Time Password (OTP) to proceed:</p>
+              
+              <div style="background-color: #f8f9fa; border-left: 4px solid #e74c3c; padding: 15px; margin: 20px 0; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 5px;">
+                ${otp}
+              </div>
+              
+              <p>This OTP is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
+              
+              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
+                <p>This is an automated notification from AI Meeting Tracker</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Password reset OTP email sent successfully to ${to}`);
+    return info;
+  } catch (error) {
+    console.error(`Failed to send password reset OTP email to ${to}:`, error.message);
+    throw error;
+  }
+};
+
 module.exports = {
   sendReminderEmail,
   sendMeetingNotificationEmail,
+  sendOTPEmail,
+  sendPasswordResetOTPEmail,
 };
