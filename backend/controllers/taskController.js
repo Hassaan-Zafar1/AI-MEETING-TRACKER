@@ -1,10 +1,19 @@
 const ActionItem = require('../models/ActionItem');
+const Meeting = require('../models/Meeting');
 
 // GET /api/tasks?meetingId=xxx - get tasks for a meeting
 const getTasks = async (req, res) => {
   try {
     const { meetingId } = req.query;
-    const filter = meetingId ? { meetingId } : {};
+    let filter = {};
+    
+    if (meetingId) {
+      filter.meetingId = meetingId;
+    } else {
+      const userMeetings = await Meeting.find({ createdBy: req.user._id }).select('_id');
+      const meetingIds = userMeetings.map(m => m._id);
+      filter.meetingId = { $in: meetingIds };
+    }
 
     const tasks = await ActionItem.find(filter)
       .populate('assignee', 'name email avatar')
@@ -91,8 +100,14 @@ const addComment = async (req, res) => {
 // GET /api/tasks/analytics - get stats for dashboard
 const getAnalytics = async (req, res) => {
   try {
+    const userMeetings = await Meeting.find({ createdBy: req.user._id }).select('_id');
+    const meetingIds = userMeetings.map(m => m._id);
+
     // MongoDB aggregation pipeline - powerful way to calculate stats
     const stats = await ActionItem.aggregate([
+      {
+        $match: { meetingId: { $in: meetingIds } }
+      },
       {
         // $group groups documents and calculates values
         $group: {
@@ -102,8 +117,13 @@ const getAnalytics = async (req, res) => {
       },
     ]);
 
-    const riskItems = await ActionItem.countDocuments({ riskFlag: true, status: { $ne: 'done' } });
+    const riskItems = await ActionItem.countDocuments({ 
+      meetingId: { $in: meetingIds },
+      riskFlag: true, 
+      status: { $ne: 'done' } 
+    });
     const overdueItems = await ActionItem.countDocuments({
+      meetingId: { $in: meetingIds },
       dueDate: { $lt: new Date() }, // dueDate is in the past
       status: { $ne: 'done' },
     });
