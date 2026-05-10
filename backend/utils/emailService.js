@@ -1,9 +1,11 @@
-const { Resend } = require('resend');
+const { MailerSend, EmailParams, Recipient } = require('mailersend');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const mailer = new MailerSend({
+  api_key: process.env.MAILERSEND_API_KEY,
+});
 
-// Determine sender email based on environment
-const SENDER_EMAIL = process.env.SENDER_EMAIL || 'noreply@resend.dev';
+const SENDER_EMAIL = process.env.SENDER_EMAIL || 'noreply@trial.mlsender.net';
+const SENDER_NAME = 'AI Meeting Tracker';
 
 /**
  * Send a reminder email to a user
@@ -54,15 +56,17 @@ const sendReminderEmail = async (to, taskDescription, dueDate, assigneeName) => 
       </html>
     `;
 
-    console.log(`📤 [Email Service] Sending email via Resend...`);
-    const info = await resend.emails.send({
-      from: SENDER_EMAIL,
-      to: to,
-      subject: `Task Reminder: ${taskDescription}`,
-      html: htmlContent,
-    });
+    console.log(`📤 [Email Service] Sending email via MailerSend...`);
     
-    console.log(`✅ [Email Service] Email sent successfully to ${to}: ${info.id}`);
+    const emailParams = new EmailParams()
+      .setFrom(SENDER_EMAIL)
+      .setFromName(SENDER_NAME)
+      .setTo([new Recipient(to)])
+      .setSubject(`Task Reminder: ${taskDescription}`)
+      .setHtml(htmlContent);
+
+    const info = await mailer.email.send(emailParams);
+    console.log(`✅ [Email Service] Email sent successfully to ${to}`);
     return info;
   } catch (error) {
     console.error(`❌ [Email Service] Failed to send email to ${to}:`, error.message);
@@ -118,14 +122,16 @@ const sendMeetingNotificationEmail = async (to, meetingTitle, meetingDate, userN
     `;
 
     console.log(`📤 [Email Service] Sending meeting notification to ${to}...`);
-    const info = await resend.emails.send({
-      from: SENDER_EMAIL,
-      to: to,
-      subject: `Meeting Notification: ${meetingTitle}`,
-      html: htmlContent,
-    });
+    
+    const emailParams = new EmailParams()
+      .setFrom(SENDER_EMAIL)
+      .setFromName(SENDER_NAME)
+      .setTo([new Recipient(to)])
+      .setSubject(`Meeting Notification: ${meetingTitle}`)
+      .setHtml(htmlContent);
 
-    console.log(`✅ [Email Service] Meeting notification sent to ${to}: ${info.id}`);
+    const info = await mailer.email.send(emailParams);
+    console.log(`✅ [Email Service] Meeting notification sent to ${to}`);
     return info;
   } catch (error) {
     console.error(`❌ [Email Service] Failed to send meeting notification to ${to}:`, error.message);
@@ -173,15 +179,17 @@ const sendOTPEmail = async (to, otp, userName) => {
       </html>
     `;
 
-    console.log(`📤 [Email Service] Sending OTP email via Resend...`);
-    const info = await resend.emails.send({
-      from: SENDER_EMAIL,
-      to: to,
-      subject: 'Password Reset OTP - AI Meeting Tracker',
-      html: htmlContent,
-    });
+    console.log(`📤 [Email Service] Sending OTP email via MailerSend...`);
+    
+    const emailParams = new EmailParams()
+      .setFrom(SENDER_EMAIL)
+      .setFromName(SENDER_NAME)
+      .setTo([new Recipient(to)])
+      .setSubject('Password Reset OTP - AI Meeting Tracker')
+      .setHtml(htmlContent);
 
-    console.log(`✅ [Email Service] OTP email sent successfully to ${to}: ${info.id}`);
+    const info = await mailer.email.send(emailParams);
+    console.log(`✅ [Email Service] OTP email sent successfully to ${to}`);
     return info;
   } catch (error) {
     console.error(`Failed to send password reset OTP email to ${to}:`, error.message);
