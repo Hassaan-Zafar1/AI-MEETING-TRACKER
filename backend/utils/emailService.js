@@ -1,13 +1,9 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Configure your email service credentials
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Determine sender email based on environment
+const SENDER_EMAIL = process.env.SENDER_EMAIL || 'noreply@resend.dev';
 
 /**
  * Send a reminder email to a user
@@ -30,42 +26,43 @@ const sendReminderEmail = async (to, taskDescription, dueDate, assigneeName) => 
       minute: '2-digit',
     });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    const htmlContent = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;">
+              📋 Task Reminder
+            </h2>
+            
+            <p style="margin-top: 20px;">Hi,</p>
+            
+            <p>This is a reminder about an action item from your meeting:</p>
+            
+            <div style="background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0;">
+              <p style="margin: 10px 0;"><strong>Task:</strong> ${taskDescription}</p>
+              <p style="margin: 10px 0;"><strong>Assigned to:</strong> ${assigneeName}</p>
+              <p style="margin: 10px 0;"><strong>Due Date:</strong> ${dueDateFormatted}</p>
+            </div>
+            
+            <p>Please ensure this action item is completed on time.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
+              <p>This is an automated reminder from AI Meeting Tracker</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    console.log(`📤 [Email Service] Sending email via Resend...`);
+    const info = await resend.emails.send({
+      from: SENDER_EMAIL,
       to: to,
       subject: `Task Reminder: ${taskDescription}`,
-      html: `
-        <html>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;">
-                📋 Task Reminder
-              </h2>
-              
-<p style="margin-top: 20px;">Hi,</p>
-              
-              <p>This is a reminder about an action item from your meeting:</p>
-              
-              <div style="background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0;">
-                <p style="margin: 10px 0;"><strong>Task:</strong> ${taskDescription}</p>
-                <p style="margin: 10px 0;"><strong>Assigned to:</strong> ${assigneeName}</p>
-                <p style="margin: 10px 0;"><strong>Due Date:</strong> ${dueDateFormatted}</p>
-              </div>
-              
-              <p>Please ensure this action item is completed on time.</p>
-              
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
-                <p>This is an automated reminder from AI Meeting Tracker</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
-    };
-
-    console.log(`📤 [Email Service] Sending email via Gmail...`);
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ [Email Service] Email sent successfully to ${to}: ${info.response}`);
+      html: htmlContent,
+    });
+    
+    console.log(`✅ [Email Service] Email sent successfully to ${to}: ${info.id}`);
     return info;
   } catch (error) {
     console.error(`❌ [Email Service] Failed to send email to ${to}:`, error.message);
@@ -93,93 +90,45 @@ const sendMeetingNotificationEmail = async (to, meetingTitle, meetingDate, userN
       minute: '2-digit',
     });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
+    const htmlContent = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;">
+              📅 Meeting Notification
+            </h2>
+            
+            <p style="margin-top: 20px;">Hi ${userName},</p>
+            
+            <p>You have a new meeting scheduled:</p>
+            
+            <div style="background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0;">
+              <p style="margin: 10px 0;"><strong>Meeting:</strong> ${meetingTitle}</p>
+              <p style="margin: 10px 0;"><strong>Date & Time:</strong> ${meetingDateFormatted}</p>
+            </div>
+            
+            <p>Please make sure you're available at the scheduled time.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
+              <p>This is an automated notification from AI Meeting Tracker</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    console.log(`📤 [Email Service] Sending meeting notification to ${to}...`);
+    const info = await resend.emails.send({
+      from: SENDER_EMAIL,
       to: to,
       subject: `Meeting Notification: ${meetingTitle}`,
-      html: `
-        <html>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px;">
-                📅 Meeting Notification
-              </h2>
-              
-              <p style="margin-top: 20px;">Hi <strong>${userName}</strong>,</p>
-              
-              <p>You have been invited to the following meeting:</p>
-              
-              <div style="background-color: #f8f9fa; border-left: 4px solid #27ae60; padding: 15px; margin: 20px 0;">
-                <p style="margin: 10px 0;"><strong>Meeting:</strong> ${meetingTitle}</p>
-                <p style="margin: 10px 0;"><strong>Date & Time:</strong> ${meetingDateFormatted}</p>
-              </div>
-              
-              <p>Please make sure to attend on time.</p>
-              
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
-                <p>This is an automated notification from AI Meeting Tracker</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
-    };
+      html: htmlContent,
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Meeting notification sent successfully to ${to}: ${info.response}`);
+    console.log(`✅ [Email Service] Meeting notification sent to ${to}: ${info.id}`);
     return info;
   } catch (error) {
-    console.error(`Failed to send meeting notification to ${to}:`, error.message);
-    throw error;
-  }
-};
-
-/**
- * Send an OTP email for registration verification
- * @param {string} to - Recipient email address
- * @param {string} otp - The one-time password
- * @param {string} userName - Name of the user
- * @returns {Promise}
- */
-const sendOTPEmail = async (to, otp, userName) => {
-  try {
-    const mailOptions = {
-      from: `"Meeting Tracker" <${process.env.EMAIL_USER}>`,
-      to: to,
-      subject: `Verify Your Account - Meeting Tracker`,
-      text: `Hi ${userName},\n\nWelcome to Meeting Tracker! To complete your registration, please use the following One-Time Password (OTP):\n\n${otp}\n\nThis OTP is valid for 10 minutes. Please do not share it with anyone.\n\nThis is an automated notification from AI Meeting Tracker.`,
-      html: `
-        <html>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #2c3e50; border-bottom: 3px solid #8e44ad; padding-bottom: 10px;">
-                🔐 Account Verification
-              </h2>
-              
-              <p style="margin-top: 20px;">Hi <strong>${userName}</strong>,</p>
-              
-              <p>Welcome to Meeting Tracker! To complete your registration, please use the following One-Time Password (OTP):</p>
-              
-              <div style="background-color: #f8f9fa; border-left: 4px solid #8e44ad; padding: 15px; margin: 20px 0; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 5px;">
-                ${otp}
-              </div>
-              
-              <p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
-              
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
-                <p>This is an automated notification from AI Meeting Tracker</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`OTP email sent successfully to ${to}`);
-    return info;
-  } catch (error) {
-    console.error(`Failed to send OTP email to ${to}:`, error.message);
+    console.error(`❌ [Email Service] Failed to send meeting notification to ${to}:`, error.message);
     throw error;
   }
 };
@@ -187,46 +136,52 @@ const sendOTPEmail = async (to, otp, userName) => {
 /**
  * Send an OTP email for password reset
  * @param {string} to - Recipient email address
- * @param {string} otp - The one-time password
+ * @param {string} otp - One-time password
  * @param {string} userName - Name of the user
  * @returns {Promise}
  */
-const sendPasswordResetOTPEmail = async (to, otp, userName) => {
+const sendOTPEmail = async (to, otp, userName) => {
   try {
-    const mailOptions = {
-      from: `"Meeting Tracker" <${process.env.EMAIL_USER}>`,
-      to: to,
-      subject: `Reset Your Password - Meeting Tracker`,
-      text: `Hi ${userName},\n\nYou requested to reset your password. Please use the following One-Time Password (OTP):\n\n${otp}\n\nThis OTP is valid for 10 minutes. If you did not request this, please ignore this email.\n\nThis is an automated notification from AI Meeting Tracker.`,
-      html: `
-        <html>
-          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #e74c3c; border-bottom: 3px solid #e74c3c; padding-bottom: 10px;">
-                🔑 Password Reset Request
-              </h2>
-              
-              <p style="margin-top: 20px;">Hi <strong>${userName}</strong>,</p>
-              
-              <p>You recently requested to reset your password for your Meeting Tracker account. Please use the following One-Time Password (OTP) to proceed:</p>
-              
-              <div style="background-color: #f8f9fa; border-left: 4px solid #e74c3c; padding: 15px; margin: 20px 0; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 5px;">
-                ${otp}
-              </div>
-              
-              <p>This OTP is valid for 10 minutes. If you did not request a password reset, please ignore this email.</p>
-              
-              <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
-                <p>This is an automated notification from AI Meeting Tracker</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
-    };
+    console.log(`📧 [Email Service] Preparing OTP email for ${to}...`);
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`Password reset OTP email sent successfully to ${to}`);
+    const htmlContent = `
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;">
+              🔐 Password Reset OTP
+            </h2>
+            
+            <p style="margin-top: 20px;">Hi ${userName},</p>
+            
+            <p>You requested a password reset. Use the following one-time password to reset your password:</p>
+            
+            <div style="background-color: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; text-align: center;">
+              <p style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #2c3e50; margin: 10px 0;">${otp}</p>
+              <p style="color: #7f8c8d; margin: 10px 0; font-size: 14px;">This OTP is valid for 10 minutes</p>
+            </div>
+            
+            <p style="color: #e74c3c;"><strong>⚠️ Important:</strong> Never share this OTP with anyone. Our team will never ask for it.</p>
+            
+            <p>If you didn't request a password reset, please ignore this email.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #7f8c8d; font-size: 12px;">
+              <p>This is an automated email from AI Meeting Tracker</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    console.log(`📤 [Email Service] Sending OTP email via Resend...`);
+    const info = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: to,
+      subject: 'Password Reset OTP - AI Meeting Tracker',
+      html: htmlContent,
+    });
+
+    console.log(`✅ [Email Service] OTP email sent successfully to ${to}: ${info.id}`);
     return info;
   } catch (error) {
     console.error(`Failed to send password reset OTP email to ${to}:`, error.message);
@@ -238,5 +193,4 @@ module.exports = {
   sendReminderEmail,
   sendMeetingNotificationEmail,
   sendOTPEmail,
-  sendPasswordResetOTPEmail,
 };
