@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '../store/authStore';
 
 // Custom hook to manage Socket.IO connection
+// Uses useState instead of useRef so components re-render when the socket connects
 export const useSocket = () => {
-  // useRef persists the socket across renders without causing re-renders
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -13,24 +13,28 @@ export const useSocket = () => {
     const SOCKET_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     // Connect to the Socket.IO server
-    socketRef.current = io(SOCKET_URL, {
+    const newSocket = io(SOCKET_URL, {
       // Send JWT token for authentication
       auth: { token: user.token },
     });
 
-    socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current?.id);
+    newSocket.on('connect', () => {
+      console.log('Socket connected:', newSocket.id);
+      // Trigger re-render so components get the live socket instance
+      setSocket(newSocket);
     });
 
-    socketRef.current.on('disconnect', () => {
+    newSocket.on('disconnect', () => {
       console.log('Socket disconnected');
+      setSocket(null);
     });
 
     // Cleanup: disconnect when component unmounts or user logs out
     return () => {
-      socketRef.current?.disconnect();
+      newSocket.disconnect();
+      setSocket(null);
     };
   }, [user]);
 
-  return socketRef.current;
+  return socket;
 };
