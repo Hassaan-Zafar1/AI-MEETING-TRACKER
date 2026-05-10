@@ -4,7 +4,7 @@ const mailer = new MailerSend({
   api_key: process.env.MAILERSEND_API_KEY,
 });
 
-const SENDER_EMAIL = process.env.SENDER_EMAIL || 'noreply@trial.mlsender.net';
+const SENDER_EMAIL = process.env.SENDER_EMAIL || 'noreply@test-eqvygm0yerjl0p7w.mlsender.net';
 const SENDER_NAME = 'AI Meeting Tracker';
 
 /**
@@ -59,9 +59,8 @@ const sendReminderEmail = async (to, taskDescription, dueDate, assigneeName) => 
     console.log(`📤 [Email Service] Sending email via MailerSend...`);
     
     const emailParams = new EmailParams()
-      .setFrom(SENDER_EMAIL)
-      .setFromName(SENDER_NAME)
-      .setTo([new Recipient(to)])
+      .setFrom({ email: SENDER_EMAIL, name: SENDER_NAME })
+      .setTo([{ email: to }])
       .setSubject(`Task Reminder: ${taskDescription}`)
       .setHtml(htmlContent);
 
@@ -124,9 +123,8 @@ const sendMeetingNotificationEmail = async (to, meetingTitle, meetingDate, userN
     console.log(`📤 [Email Service] Sending meeting notification to ${to}...`);
     
     const emailParams = new EmailParams()
-      .setFrom(SENDER_EMAIL)
-      .setFromName(SENDER_NAME)
-      .setTo([new Recipient(to)])
+      .setFrom({ email: SENDER_EMAIL, name: SENDER_NAME })
+      .setTo([{ email: to }])
       .setSubject(`Meeting Notification: ${meetingTitle}`)
       .setHtml(htmlContent);
 
@@ -182,9 +180,8 @@ const sendOTPEmail = async (to, otp, userName) => {
     console.log(`📤 [Email Service] Sending OTP email via MailerSend...`);
     
     const emailParams = new EmailParams()
-      .setFrom(SENDER_EMAIL)
-      .setFromName(SENDER_NAME)
-      .setTo([new Recipient(to)])
+      .setFrom({ email: SENDER_EMAIL, name: SENDER_NAME })
+      .setTo([{ email: to }])
       .setSubject('Password Reset OTP - AI Meeting Tracker')
       .setHtml(htmlContent);
 
