@@ -36,6 +36,8 @@ const MeetingDetailPage = () => {
     ['meeting', id],
     () => getMeeting(id!),
     {
+      staleTime: 0,           // always refetch when revisiting this page
+      refetchOnWindowFocus: true,
       onSuccess: (data: MeetingDetailResponse) => {
         setNotes(data.meeting.rawNotes || '');
         setLocalTasks(data.actionItems);
@@ -51,6 +53,11 @@ const MeetingDetailPage = () => {
     // Listen for new tasks created by AI extraction
     socket.on('tasks:created', (newTasks: ActionItem[]) => {
       setLocalTasks(newTasks);
+      // Also update the React Query cache so it stays in sync
+      queryClient.setQueryData(['meeting', id], (old: any) =>
+        old ? { ...old, actionItems: newTasks } : old
+      );
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
       toast.success(`${newTasks.length} action items extracted!`);
     });
 
@@ -66,7 +73,7 @@ const MeetingDetailPage = () => {
       socket.off('tasks:created');
       socket.off('task:updated');
     };
-  }, [socket, id]);
+  }, [socket, id, queryClient]);
 
   // Save notes mutation
   const saveNotesMutation = useMutation(
@@ -83,7 +90,13 @@ const MeetingDetailPage = () => {
     {
       onSuccess: ({ actionItems }: ExtractActionItemsResponse) => {
         setLocalTasks(actionItems);
+        // Update the cache directly so revisiting doesn't show old data
+        queryClient.setQueryData(['meeting', id], (old: any) =>
+          old ? { ...old, actionItems, meeting: { ...old.meeting, isProcessed: true } } : old
+        );
         queryClient.invalidateQueries({ queryKey: ['meeting', id] });
+        queryClient.invalidateQueries({ queryKey: ['analytics'] });
+        queryClient.invalidateQueries({ queryKey: ['meetings'] });
         toast.success('Action items extracted!');
       },
       onError: () => toast.error('AI extraction failed. Check your API key.'),
